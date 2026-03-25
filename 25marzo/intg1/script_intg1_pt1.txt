@@ -1,0 +1,138 @@
+! ===========================
+! ======== ETA DONE ========
+! ===========================
+
+! El nombre de host del dispositivo debe estar como lo indica en el esquema
+! Contraseña en modo privilegiado: INTEGRA2023
+ena
+config t
+enable secret INTEGRA2023
+hostname ETA
+
+! Deshabilitar la búsqueda DNS
+no ip domain-lookup
+
+! Todas las contraseñas deben estar encriptadas
+service password-encryption 
+
+! Configure el registro sincrónico para la línea de la consola
+! Contraseña de consola: AREA145
+line con 0
+password AREA145
+login
+logging synchronous
+
+! Configure un banner de mensaje del día como: “¡Advertencia! Solo personal autorizado.”
+banner motd #¡Advertencia! Solo personal autorizado.# 
+
+! Contraseña para acceso remoto: REMOTO2020
+line vty 0 4 
+password REMOTO2020 
+login
+logging synchronous
+exit
+
+! Configurar y activar las interfaces Gigabit Ethernet utilizando la información contenida en el esquema.
+! ETA : Interfaces G0/0/0 y G0/0/1
+int g0/0/0
+desc conexion router DELTA
+ip add  10.21.52.184  255.255.255.252
+no shut
+
+int g0/0/1
+desc conexion router ZETA
+ip add  10.21.52.190  255.255.255.252
+no shut
+
+
+
+! ===========================
+! ======== GAMMA DONE  ========
+! ===========================
+
+
+! El nombre de host del dispositivo debe estar como lo indica en el esquema
+! Contraseña en modo privilegiado: INTEGRA2023
+ena
+config t
+enable secret INTEGRA2023
+hostname GAMMA
+
+! Deshabilitar la búsqueda DNS
+no ip domain-lookup
+
+! Todas las contraseñas deben estar encriptadas
+service password-encryption 
+
+! Configure el registro sincrónico para la línea de la consola
+! Contraseña de consola: AREA145
+line con 0
+password AREA145
+login
+logging synchronous
+
+! Configure un banner de mensaje del día como: “¡Advertencia! Solo personal autorizado.”
+banner motd #¡Advertencia! Solo personal autorizado.# 
+
+! Contraseña para acceso remoto: REMOTO2020
+line vty 0 4 
+password REMOTO2020 
+login
+logging synchronous
+exit
+
+! Configurar y activar las interfaces Gigabit Ethernet utilizando la información contenida en el esquema.
+! GAMMA : Interfaces G0/0/0 y G0/0/1
+int g0/0/0
+desc conexion router KAPPA
+ip add  10.21.52.132  255.255.255.224
+no shut
+
+int g0/0/1
+desc conexion switch RO
+ip add  10.21.0.1  255.255.240.0
+no shut
+
+
+
+
+! ===========================
+! ======== SIGMA DONE ========
+! ===========================
+
+! El nombre de host del dispositivo debe estar como lo indica en el esquema
+! Contraseña en modo privilegiado: INTEGRA2023
+ena
+config t
+enable secret INTEGRA2023
+hostname SIGMA
+
+! Deshabilitar la búsqueda DNS
+no ip domain-lookup
+
+! Todas las contraseñas deben estar encriptadas
+service password-encryption 
+
+! Configure el registro sincrónico para la línea de la consola
+! Contraseña de consola: AREA145
+line con 0
+password AREA145
+login
+logging synchronous
+
+! Configure un banner de mensaje del día como: “¡Advertencia! Solo personal autorizado.”
+banner motd #¡Advertencia! Solo personal autorizado.# 
+
+! Contraseña para acceso remoto: REMOTO2020
+line vty 0 4 
+password REMOTO2020 
+login
+logging synchronous
+exit
+
+! Configurar y activar las interfaces Gigabit Ethernet utilizando la información contenida en el esquema.
+! SIGMA : Interface G0/0/0
+int g0/0/0
+desc conexion router KAPPA
+ip add  10.21.52.178  255.255.255.248
+no shut

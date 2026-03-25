@@ -1,0 +1,36 @@
+
+-----------------------------------------------------
+Comandos para el Router
+-----------------------------------------------------
+! Secci�n para crear las subinterfaces asociadas a cada VLAN
+int g0/1.VID
+desc 
+encapsulation  dot1q  VID
+ip add  DirIP  Msk
+
+int g0/1
+no shut
+
+
+
+-----------------------------------------------------
+Comandos para Switch
+-----------------------------------------------------
+
+! Creaci�n de las VLANs con nombre.  
+vlan VID
+name NombreVLAN-asociadaVID
+exit
+
+! Asignaci�n de puertos a la VLAN  VID
+! Puertos de accesso para una VLAN
+interface range
+switchport mode access
+switchport access vlan  VID
+
+! Definici�n del o los puertos TRUNK
+! Puertos de accesso de varias VLANs
+interface  Nombre_Interfaz
+switchport mode trunk
+no shut
+

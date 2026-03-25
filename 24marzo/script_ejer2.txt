@@ -1,0 +1,294 @@
+! ===========================
+! ======== RFrontera ========
+! ===========================
+
+ena
+config t
+hostname RFrontera
+
+no ip domain-lookup
+service password-encryption 
+
+! guarda el password "class" para la terminal de configuración (encriptada)
+enable secret class
+! guarda el password "class" para la terminal de configuración (sin encriptar)
+! enable password class
+
+banner motd # Unauthorized access is strictly prohibited. # 
+
+! configuracion de la terminal, permite configurar de manera más flexible "> ... ", con contrasena cisco
+line con 0
+password cisco
+login
+logging synchronous
+
+! numero de conexiones al router (5 conexiones), con contrasena cisco
+line vty 0 4 
+password cisco 
+login
+logging synchronous
+exit
+
+int s0/0/1
+desc Interfaz que conecta con ISP
+ip address 65.255.255.253 255.255.255.252
+no shut
+
+! Declaracin de subinterfaces
+! bite critico -2 porque la de brodcast NO se usa para interfaces
+! Siempre se requiere de una nativa, la cual será entre el router y los switches primarios
+! Son interfaces logicas, se pegan a una intefaz fisica, la fisica si se levanta
+! Se coloco la ip_ultima_valida para las interfaces logicas porque asi indica el ejer
+! Las interfaces logicas requieren de una ip valida, ya que sirven como una ip_bloque
+int g0/0.1
+desc vlan 1 nativa
+encapsulation  dot1q  1
+ip add 192.168.1.158 255.255.255.248
+
+int g0/0.10
+desc vlan 10 manager
+encapsulation  dot1q  10
+ip add 192.168.1.142 255.255.255.240
+
+
+int g0/0.20
+desc vlan 20 users
+encapsulation  dot1q  20
+ip add 192.168.1.126 255.255.255.128
+
+
+int g0/0.30
+desc vlan 30 services
+encapsulation  dot1q  30
+ip add 192.168.1.150 255.255.255.248
+
+! no requiere de ip
+int g0/0
+no shut
+
+! Establecer una ruta por default que se encargue de sacar el tr fico a Internet
+ip route 0.0.0.0 0.0.0.0 s0/0/1
+
+! next hop
+! ip route 0.0.0.0 0.0.0.0 65.255.255.252
+
+end
+
+! ====================
+! ===== SCompany =====
+! ====================
+
+ena
+conf t
+hostname SCompany
+
+no ip domain-lookup
+service password-encryption 
+
+enable secret class
+
+banner motd # Unauthorized access is strictly prohibited.# 
+
+line con 0
+password cisco 
+login
+logging synchronous
+
+line vty 0 15 
+password cisco 
+login
+logging synchronous
+exit
+
+! Creaci n de la base de datos de las VLANs
+vlan 10
+name managers
+exit
+
+vlan 20
+name users
+exit
+
+vlan 30
+name services
+exit
+
+! Agrega una ip para este switch
+int vlan 1
+ip address 192.168.1.153 255.255.255.248
+no shut
+! Misma gateway hacia la vlan 1
+ip default-gateway 192.168.1.158
+
+! Definici n de los puertos troncales
+interface g0/1
+switchport mode trunk
+no shut
+
+interface f0/1
+switchport mode trunk
+no shut
+
+interface f0/2
+switchport mode trunk
+no shut
+
+end
+
+! =================== 
+! ====== SOeste ======
+! ===================
+
+ena
+conf t
+hostname SOeste
+
+no ip domain-lookup
+service password-encryption 
+
+enable secret class
+
+banner motd # Unauthorized access is strictly prohibited.# 
+
+line con 0
+password cisco 
+login
+logging synchronous
+
+line vty 0 15 
+password cisco 
+login
+logging synchronous
+exit
+
+! Creaci n de la base de datos de las VLANs
+vlan 10
+name managers
+exit
+
+vlan 20
+name users
+exit
+
+vlan 30
+name services
+exit
+
+! Definici n de los puertos de acceso
+interface range f0/2-6
+switchport mode access
+switchport access vlan 10
+
+interface range f0/7-19
+switchport mode access
+switchport access vlan 20
+
+interface range f0/20-24
+switchport mode access
+switchport access vlan 30
+
+! Definici n de los puertos troncales
+interface f0/1
+switchport mode trunk
+no shut
+
+! Agrega una ip para este switch
+int vlan 1
+ip address 192.168.1.154 255.255.255.248
+no shut
+! Misma gateway hacia la vlan 1
+ip default-gateway 192.168.1.158
+
+end
+
+! =====================
+! ====== SEste ========
+! =====================
+ena
+conf t
+hostname SEste
+
+no ip domain-lookup
+service password-encryption 
+
+enable secret class
+
+banner motd # Unauthorized access is strictly prohibited.# 
+
+line con 0
+password cisco 
+login
+logging synchronous
+
+line vty 0 15 
+password cisco 
+login
+logging synchronous
+exit
+
+! Creaci n de la base de datos de las VLANs
+vlan 10
+name managers
+exit
+
+vlan 20
+name users
+exit
+
+vlan 30
+name services
+exit
+
+! Definici n de los puertos de acceso
+interface range f0/2-6
+switchport mode access
+switchport access vlan 10
+
+interface range f0/7-19
+switchport mode access
+switchport access vlan 20
+
+interface range f0/20-24
+switchport mode access
+switchport access vlan 30
+
+! Definici n de los puertos troncales
+interface f0/1
+switchport mode trunk
+no shut
+
+! Agrega una ip para este switch
+int vlan 1
+ip address 192.168.1.155 255.255.255.248
+no shut
+! Misma gateway hacia la vlan 1
+ip default-gateway 192.168.1.158
+
+end
+
+! ==========================
+! ======== ISP ==========
+! ==========================
+
+! Rutas est ticas para conectar el tr fico de Internet con las subredes locales
+! SON 4 RUTAS, UNA POR CADA VLAN, DIRECTAMENTE CONECTADAS
+
+! la interfaz de salida siempre es s0/0/0 porque sale de la interfaz del ISP poiting inside
+
+! las ips que se colocan son las ips de las VLANs, incluyendo la VLAN 1
+
+cisco
+ena
+conf t
+class
+
+ip route 192.168.1.152 255.255.255.248 s0/0/0
+ip route 192.168.1.128 255.255.255.240 s0/0/0
+ip route 192.168.1.0 255.255.255.128 s0/0/0
+ip route 192.168.1.144  255.255.255.248 s0/0/0
+
+! sh vlan brief
+! sh int trunk
+! agrega como default gateway a los equipos la ip de la vlan correspondiente
+
+! ping a los gateways de las vlan!

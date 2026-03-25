@@ -1,0 +1,184 @@
+
+! ===========================
+! ======== SIGMA DONE ========
+! ===========================
+
+!  Cnfigura todo lo necesario para poder obtener conectividad entre VLAN’s y extremo a extremo.
+! Una vlan nativa (1) sirve para tener una conexion remota a los switches, porque la vlan nativa requiere que
+! se configuren IPs a los switches que apunten a la vlan 1
+
+!  Configura las subinterfaces de la interfaz G0/0/1 del ruteador SIGMA con la primera dirección IP válida de cada subred (VLAN).
+! get into  "config t"
+
+int g0/0/1.100
+desc vlan 100 2000 hosts
+encapsulation  dot1q  100
+ip add  10.21.32.1  255.255.248.0
+
+int g0/0/1.200 
+desc vlan 3050 hosts
+encapsulation  dot1q  200
+ip add  10.21.16.1  255.255.240.0
+
+int g0/0/1
+no shut
+
+! ===========================
+! ======== FI ======== 
+
+! ===========================
+
+! Configura el nombre de cada switch.
+ena
+config t
+hostname FI
+
+no ip domain-lookup
+service password-encryption 
+
+enable secret class
+
+banner motd # Unauthorized access is strictly prohibited.# 
+
+line con 0
+password cisco 
+login
+logging synchronous 
+
+line vty 0 15 
+password cisco 
+login
+logging synchronous
+exit
+
+! Configura las vlans con los nombres VLAN100 y VLAN200.
+vlan 100
+name VLAN100
+exit
+
+vlan 200
+name VLAN200
+exit
+
+! Definici�n del o los puertos TRUNK
+interface range f0/1-3
+switchport mode trunk
+no shut
+
+end
+
+! ===========================
+! ======== OMEGA ========
+! ===========================
+
+! Configura el nombre de cada switch.
+ena
+config t
+hostname OMEGA
+
+no ip domain-lookup
+service password-encryption 
+
+enable secret class
+
+banner motd # Unauthorized access is strictly prohibited.# 
+
+line con 0
+password cisco 
+login
+logging synchronous 
+
+line vty 0 15 
+password cisco 
+login
+logging synchronous
+exit
+
+! Configura las vlans con los nombres VLAN100 y VLAN200.
+vlan 100
+name VLAN100
+exit
+
+vlan 200
+name VLAN200
+exit
+
+! Asignaci�n de puertos a la VLAN  VID
+! Puertos de accesso para una VLAN
+interface range f0/4
+switchport mode access
+switchport access vlan 200
+
+interface range f0/3
+switchport mode access
+switchport access vlan 100
+
+! Definici�n del o los puertos TRUNK
+interface range f0/1-2
+switchport mode trunk
+no shut
+
+end
+
+! ===========================
+! ======== NU ========
+! ===========================
+
+! Configura el nombre de cada switch.
+ena
+config t
+hostname NU
+
+no ip domain-lookup
+service password-encryption 
+
+enable secret class
+
+banner motd # Unauthorized access is strictly prohibited.# 
+
+line con 0
+password cisco 
+login
+logging synchronous 
+
+line vty 0 15 
+password cisco 
+login
+logging synchronous
+exit
+
+! Configura las vlans con los nombres VLAN100 y VLAN200.
+vlan 100
+name VLAN100
+exit
+
+vlan 200
+name VLAN200
+exit
+
+! Asignaci�n de puertos a la VLAN  VID
+! Puertos de accesso para una VLAN
+interface range f0/4
+switchport mode access
+switchport access vlan 200
+
+interface range f0/3
+switchport mode access
+switchport access vlan 100
+
+! Definici�n del o los puertos TRUNK
+interface range f0/1-2
+switchport mode trunk
+no shut
+
+end
+
+
+
+
+
+!  Recuerda que debes configurar todo lo necesario en los switches FI, OMEGA y NU para lograr conectividad. 
+
+! DONE:
+!  Configura las cuatro laptops de la sección azul con las direcciones mostradas en el esquema (IP, máscara de subred y default gateway)
+!       la ip de la vlan/default-gateway siempre será la primera valida

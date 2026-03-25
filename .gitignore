@@ -1,0 +1,25 @@
+node_modules
+.env
+
+# PS C:\Users\Usuario\Desktop\MVP IFC> git push -f
+# git push ifc_repo master:todo-entrega-1abril
+
+# git push ifc_repo master:todo-entrega-15marzo
+# version the development with those branches
+
+# git branch *
+
+# git checkout -b solve_01
+# git pull ifc_repo main
+
+# git pull ifc_repo main
+# git fetch ifc_repo
+# git rebase ifc_repo/main 
+
+# git merge ifc_repo/main --allow-unrelated-histories
+# git push --set-upstream ifc_repo solve_01
+# git push ifc_repo solve_01:main
+
+# docker container prune 
+# docker container prune -f
+# wsl --shutdown

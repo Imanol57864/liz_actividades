@@ -1,0 +1,167 @@
+!*** Switch S1 ***
+!--------------------------------------------------------------
+
+ena
+config t
+hostname S1
+
+no ip domain-lookup
+service password-encryption 
+
+enable secret class
+
+banner motd # Unauthorized access is strictly prohibited.# 
+
+line con 0
+password cisco 
+login
+logging synchronous 
+
+line vty 0 15 
+password cisco 
+login
+logging synchronous
+exit
+
+!--- Configuración de VLANs ---
+vlan 10
+name students-10
+exit
+
+vlan 20
+name faculty-20
+exit
+
+int vlan 1
+ip address 192.168.1.11 255.255.255.0
+no shut
+! Misma gateway hacia la vlan 1
+ip default-gateway 192.168.1.1
+
+! Asignaci�n de puertos a la VLAN  VID
+! Puertos de accesso para una VLAN
+interface f0/4
+switchport mode access
+switchport access vlan 10
+
+interface f0/6
+switchport mode access
+switchport access vlan 20
+
+! Definici�n del o los puertos TRUNK
+! Puertos de accesso de varias VLANs
+interface f0/5
+switchport mode trunk
+no shut
+
+interface f0/1
+switchport mode trunk
+no shut
+
+end
+
+
+!*** Switch S2 ***
+!--------------------------------------------------------------
+
+ena
+config t
+hostname S2
+
+no ip domain-lookup
+service password-encryption 
+
+enable secret class
+
+banner motd #Unauthorized access is strictly prohibited.# 
+
+line con 0
+password cisco 
+login
+logging synchronous 
+
+line vty 0 15 
+password cisco 
+login
+logging synchronous
+exit
+
+!--- Configuración de VLANs ---
+vlan 10
+name students-10
+exit
+
+vlan 20
+name faculty-20
+exit
+
+int vlan 1
+ip address 192.168.1.12 255.255.255.0
+no shut
+! Misma gateway hacia la vlan 1
+ip default-gateway 192.168.1.1
+
+! Asignaci�n de puertos a la VLAN  VID
+! Puertos de accesso para una VLAN
+interface f0/16
+switchport mode access
+switchport access vlan 10
+
+interface f0/18
+switchport mode access
+switchport access vlan 20
+
+! Definici�n del o los puertos TRUNK
+! Puertos de accesso de varias VLANs
+interface f0/1
+switchport mode trunk
+no shut
+
+end
+
+!*** Router R1 ***
+!--------------------------------------------------------------
+
+ena
+config t
+hostname R1
+
+no ip domain-lookup
+service password-encryption
+
+enable secret class
+
+banner motd #Unauthorized access is strictly prohibited.#
+
+line con 0
+password cisco
+login
+logging synchronous
+
+line vty 0 4
+password cisco
+login
+logging synchronous
+exit
+
+int Lo0
+ip address 209.165.200.225 255.255.255.224
+
+! Sección para crear las subinterfaces asociadas a cada VLAN
+int g0/1.1
+desc vlan 1 nativa
+encapsulation  dot1q  1
+ip add  192.168.1.1  255.255.255.0
+
+int g0/1.10
+desc vlan 10 students
+encapsulation  dot1q  10
+ip add  192.168.10.1  255.255.255.0
+
+int g0/1.20
+desc vlan 20 faculty
+encapsulation  dot1q  20
+ip add  192.168.20.1  255.255.255.0
+
+int g0/1
+no shut
