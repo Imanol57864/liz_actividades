@@ -24,8 +24,7 @@ int g0/0/1
 no shut
 
 ! ===========================
-! ======== FI ======== 
-
+! ======== FI DONE ======== 
 ! ===========================
 
 ! Configura el nombre de cada switch.
@@ -68,7 +67,7 @@ no shut
 end
 
 ! ===========================
-! ======== OMEGA ========
+! ======== OMEGA DONE ========
 ! ===========================
 
 ! Configura el nombre de cada switch.
@@ -121,7 +120,7 @@ no shut
 end
 
 ! ===========================
-! ======== NU ========
+! ======== NU DONE ========
 ! ===========================
 
 ! Configura el nombre de cada switch.

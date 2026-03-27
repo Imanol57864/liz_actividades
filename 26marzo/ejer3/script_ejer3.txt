@@ -1,0 +1,186 @@
+! ---------------------------------------------
+! ROUTER R1
+! ---------------------------------------------
+en
+config t
+
+hostname R1
+
+service password-encryption
+no ip domain-lookup
+
+enable password class
+
+line con 0
+password cisco
+login
+logging synchronous
+
+line vty 0 4
+password cisco
+login
+logging synchronous
+
+banner motd # Solo acceso autorizado #
+
+interface G0/0
+description Enlace a LAN Amarilla
+ip address 192.168.1.1 255.255.255.0
+no shut
+
+! Enlace DCE
+interface S0/0/0
+description Enlace a R2
+ip address 192.168.12.1 255.255.255.252
+clock rate 128000
+no shut
+
+interface S0/0/1
+description Enlace a R3
+ip address 192.168.13.1 255.255.255.252
+no shut
+
+! OSPF (Para todas las redes conectadas)
+router ospf 8
+! ip de subred || mascara comodin || area 0
+network 192.168.1.0 0.0.0.255 area 0
+network 192.168.12.0 0.0.0.3 area 0
+network 192.168.13.0 0.0.0.3 area 0
+! passive-interface para denegar la 4rd-Saturacion a donde no
+passive-interface g0/0 
+
+! ---------------------------------------------
+! ROUTER R2
+! ---------------------------------------------
+en
+config t
+
+hostname R2
+
+service password-encryption
+no ip domain-lookup
+
+enable password class
+
+line con 0
+password cisco
+login
+logging synchronous
+
+line vty 0 4
+password cisco
+login
+logging synchronous
+
+banner motd # Solo acceso autorizado #
+
+interface G0/0
+description Enlace a LAN Verde
+ip address 192.168.2.1 255.255.255.0
+no shut
+
+interface s0/1/0
+description Enlace a ISP
+ip address 200.6.10.194 255.255.255.252
+no shut
+
+
+interface S0/0/0
+description Enlace a R1
+ip address 192.168.12.2 255.255.255.252
+no shut
+
+! Enlace DCE
+interface S0/0/1
+description Enlace a R3
+ip address 192.168.23.1 255.255.255.252
+clock rate 128000
+no shut
+
+! OSPF SIN ISP
+router ospf 8
+network 192.168.2.0 0.0.0.255 area 0
+network 192.168.12.0 0.0.0.3 area 0
+network 192.168.23.0 0.0.0.3 area 0
+passive-interface g0/0 
+passive-interface s0/1/0
+! A través de OSPF distribuir la ruta DEFAULT DIRECTAMENTE a los demás routers
+default-information originate
+
+! Ruta DEFAULT DIRECTAMENTE para el RFRONTERA -> INTERNET
+! 0.0.0.0 || 0.0.0.0 || INTERFAZ_SALIDA
+ip route 0.0.0.0 0.0.0.0 s0/1/0 
+! Ruta DEFAULT NEXT-HOP para el RFRONTERA -> INTERNET
+! 0.0.0.0 || 0.0.0.0 || IP_INTERFAZ_LLEGADA
+! ip route 0.0.0.0 0.0.0.0 200.6.10.193
+
+! ---------------------------------------------
+! ROUTER R3
+! ---------------------------------------------
+
+en
+config t
+
+hostname R3
+
+service password-encryption
+no ip domain-lookup
+
+enable password class
+
+line con 0
+password cisco
+login
+logging synchronous
+
+line vty 0 4
+password cisco
+login
+logging synchronous
+
+banner motd # Solo acceso autorizado #
+
+interface G0/0
+description Enlace a LAN Rosa
+ip address 192.168.3.1 255.255.255.0
+no shut
+
+interface S0/0/1
+description Enlace a R2
+ip address 192.168.23.2 255.255.255.252
+no shut
+
+! Enlace DCE
+interface S0/0/0
+description Enlace a R1
+ip address 192.168.13.2 255.255.255.252
+clock rate 128000
+no shut
+
+! OSPF 
+router ospf 8
+network 192.168.3.0 0.0.0.255 area 0
+network 192.168.13.0 0.0.0.3 area 0
+network 192.168.23.0 0.0.0.3 area 0
+passive-interface g0/0 
+
+! ---------------------------------------------
+! ISP
+! ---------------------------------------------
+
+! Rutas estáticas hacia las redes de la empresa
+
+! Directamente conectadas
+! IP_SUBNET_LLEGADA || MASK_SUBNET_LLEGADA || INTERFAZ_SALIDA
+ip route 192.168.1.0 255.255.255.0 s0/0/0
+ip route 192.168.2.0 255.255.255.0 s0/0/0
+ip route 192.168.3.0 255.255.255.0 s0/0/0
+
+! ESTILO NEXT-HOP
+! IP_SUBNET_LLEGADA || MASK_SUBNET_LLEGADA || IP_INTERFAZ_LLEGADA
+! ip route 192.168.1.0 255.255.255.0 200.6.10.194
+! ip route 192.168.2.0 255.255.255.0 200.6.10.194
+! ip route 192.168.3.0 255.255.255.0 200.6.10.194
+
+! el gateway de una subred es la última interfaz interna de la redes
+! no sería una serial pq no apunta a la subnet
