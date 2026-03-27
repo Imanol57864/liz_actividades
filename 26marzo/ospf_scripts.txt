@@ -1,0 +1,13 @@
+! OSPF (Para todas las redes conectadas)
+router ospf 8
+! ip de subred || mascara comodin || area 0
+network 222.32.4.64 0.0.0.7 area 0
+network 10.1.1.0 0.0.0.3 area 0
+network 10.1.1.4 0.0.0.3 area 0
+
+! passive-interface para denegar la 4rd-Saturacion a donde no
+passive-interface g0/0/0
+passive-interface s0/2/0
+default-information originate
+
+ip route 0.0.0.0 0.0.0.0 209.165.200.226

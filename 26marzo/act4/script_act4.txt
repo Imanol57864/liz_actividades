@@ -1,0 +1,182 @@
+! ---------------------------------------------
+! ROUTER R1
+! ---------------------------------------------
+
+! @config t -> Establecer como nombre del equipo R1.
+hostname R1
+
+! Desactivar la búsqueda de nombres de dominio.
+no ip domain-lookup
+
+! Establecer el servicio de cifrado de passwords.
+service password-encryption 
+
+! Establecer class como password de modo privilegiado.
+enable password class
+
+line con 0
+! Establecer cisco como password de consola. 
+password cisco
+login
+logging synchronous
+
+! Establecer cisco como password vty 0 4 para accesos remotos por telnet.
+line vty 0 4
+password cisco
+login
+logging synchronous
+
+! Configurar un banner de prevención de acceso al router.
+banner motd # Solo acceso autorizado #
+
+! Realizar la configuración de las interfaces del ruteador y poner descripción.
+interface G0/0/1
+description Enlace a LAN Celeste
+! IP_INTERFAZ MASCARA_INTERFAZ
+ip address 192.16.15.46 255.255.255.240
+no shut
+
+interface S0/1/0
+description Enlace a RF
+! IP_INTERFAZ MASCARA_INTERFAZ
+ip address 10.1.1.2 255.255.255.252
+no shut
+
+! OSPF (Para todas las redes conectadas)
+router ospf 8
+! ip de subred || mascara comodin || area 0
+network 192.16.15.32 0.0.0.15 area 0
+network 10.1.1.0 0.0.0.3 area 0
+
+! passive-interface para denegar la 4rd-Saturacion a donde no
+passive-interface g0/0/1
+
+
+! ---------------------------------------------
+! ROUTER R2
+! ---------------------------------------------
+
+! @config t -> Establecer como nombre del equipo R2.
+hostname R2
+
+! Desactivar la búsqueda de nombres de dominio.
+no ip domain-lookup
+
+! Establecer el servicio de cifrado de passwords.
+service password-encryption 
+
+! Establecer class como password de modo privilegiado.
+enable password class
+
+line con 0
+! Establecer cisco como password de consola. 
+password cisco
+login
+logging synchronous
+
+! Establecer cisco como password vty 0 4 para accesos remotos por telnet.
+line vty 0 4
+password cisco
+login
+logging synchronous
+
+! Configurar un banner de prevención de acceso al router.
+banner motd # Solo acceso autorizado #
+
+! Realizar la configuración de las interfaces del ruteador y poner descripción.
+interface G0/0/0
+description Enlace a LAN Naranja
+! IP_INTERFAZ MASCARA_INTERFAZ
+ip address 200.1.2.126 255.255.255.128
+no shut
+
+interface S0/1/1
+description Enlace a RF
+! IP_INTERFAZ MASCARA_INTERFAZ
+ip address 10.1.1.6 255.255.255.252
+no shut
+
+! OSPF (Para todas las redes conectadas)
+router ospf 8
+! ip de subred || mascara comodin || area 0
+network 200.1.2.0 0.0.0.127 area 0
+network 10.1.1.4 0.0.0.3 area 0
+! passive-interface para denegar la 4rd-Saturacion a donde no
+passive-interface g0/0/0
+
+
+! ---------------------------------------------
+! ROUTER RF
+! ---------------------------------------------
+
+! @config t -> Establecer como nombre del equipo RF.
+hostname RF
+
+! Desactivar la búsqueda de nombres de dominio.
+no ip domain-lookup
+
+! Establecer el servicio de cifrado de passwords.
+service password-encryption 
+
+! Establecer class como password de modo privilegiado.
+enable password class
+
+line con 0
+! Establecer cisco como password de consola. 
+password cisco
+login
+logging synchronous
+
+! Establecer cisco como password vty 0 4 para accesos remotos por telnet.
+line vty 0 4
+password cisco
+login
+logging synchronous
+
+! Configurar un banner de prevención de acceso al router.
+banner motd # Solo acceso autorizado #
+
+! Realizar la configuración de las interfaces del ruteador y poner descripción.
+interface S0/2/0
+description Enlace a ISP
+ip address 209.165.200.225 255.255.255.252
+no shut
+
+interface S0/1/0
+description Enlace a R1
+ip address 10.1.1.1 255.255.255.252
+clock rate 128000
+no shut
+
+interface S0/1/1
+description Enlace a R2
+ip address 10.1.1.5 255.255.255.252
+clock rate 128000
+no shut
+
+interface G0/0/0
+description Enlace a Amarilla
+ip address 222.32.4.70 255.255.255.248
+no shut
+
+! OSPF (Para todas las redes conectadas)
+router ospf 8
+! ip de subred || mascara comodin || area 0
+network 222.32.4.64 0.0.0.7 area 0
+network 10.1.1.0 0.0.0.3 area 0
+network 10.1.1.4 0.0.0.3 area 0
+
+! passive-interface para denegar la 4rd-Saturacion a donde no
+passive-interface g0/0/0
+passive-interface s0/2/0
+default-information originate
+
+ip route 0.0.0.0 0.0.0.0 209.165.200.226
+
+! ---------------------------------------------
+! ISP
+! ---------------------------------------------
+
+ip route 222.32.4.64 255.255.255.248 s0/1/0
+ip route 192.16.15.32 255.255.255.240 s0/1/0
+ip route 200.1.2.0 255.255.255.128 s0/1/0

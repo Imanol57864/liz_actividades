@@ -1,0 +1,105 @@
+! ===========================
+! ======== GAMMA DONE ========
+! ===========================
+!  Configure el protocolo de enrutamiento OSPFv2 (Utilice el ID de proceso 8 y area0 0)
+router ospf 8
+network 10.21.0.0 0.0.15.255 area 0
+network 10.21.52.132 0.0.0.3 area 0
+passive-interface g0/0/1
+
+
+! ===========================
+! ======== ETA DONE ========
+! ===========================
+
+!  Configure el protocolo de enrutamiento OSPFv2 (Utilice el ID de proceso 8 y area0 0)
+router ospf 8
+network 10.21.52.184 0.0.0.3 area 0
+network 10.21.52.188 0.0.0.3 area 0
+
+! ===========================
+! ======== SIGMA DONE ========
+! ===========================
+
+!  Configure el protocolo de enrutamiento OSPFv2 (Utilice el ID de proceso 8 y area0 0)
+router ospf 8
+network 10.21.52.178 0.0.0.3 area 0
+network 10.21.16.0 0.0.7.255 area 0
+network 10.21.32.0 0.0.15.255  area 0
+passive-interface g0/0/1
+
+
+! ===========================
+! ======== TAU ========
+! ===========================
+
+! El nombre de host del dispositivo debe estar como lo indica en el esquema
+! Contraseña en modo privilegiado: INTEGRA2023
+ena
+config t
+enable secret INTEGRA2023
+hostname TAU
+
+! Deshabilitar la búsqueda DNS
+no ip domain-lookup
+
+! Todas las contraseñas deben estar encriptadas
+service password-encryption 
+
+! Configure el registro sincrónico para la línea de la consola
+! Contraseña de consola: AREA145
+line con 0
+password AREA145
+login
+logging synchronous
+
+! Configure un banner de mensaje del día como: “¡Advertencia! Solo personal autorizado.”
+banner motd #¡Advertencia! Solo personal autorizado.# 
+
+! Contraseña para acceso remoto: REMOTO2020
+line vty 0 4 
+password REMOTO2020 
+login
+logging synchronous
+exit
+
+! INTERFACES
+int G0/1
+desc conexion switch IOTA
+ip add  10.21.52.178  255.255.255.248
+no shut
+
+int G0/2
+desc conexion switch PSI
+ip add  10.21.52.178  255.255.255.248
+no shut
+
+int F0/3
+desc conexion switch MU
+ip add 10.21.52.179 255.255.255.252
+no shut
+
+
+! VLANS
+int g0/0/1.100
+desc vlan 100 2000 hosts
+encapsulation  dot1q  100
+ip add  10.21.32.1  255.255.248.0
+
+int g0/0/1.200 
+desc vlan 3050 hosts
+encapsulation  dot1q  200
+ip add  10.21.16.1  255.255.240.0
+
+int g0/0/1
+no shut
+
+
+
+
+
+
+
+! ===========================
+! ======== IOTA || PSI ========
+! ===========================
