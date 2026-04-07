@@ -1,0 +1,124 @@
+
+! ===========================
+! ======== TAU ========
+! ===========================
+
+! Habilitar ruteo en switch multicapa
+ip routing
+
+! CONFIGURAR PUERTOS DE NO SWITCHEO
+int f0/3
+no switchport
+ip address 10.21.52.179 255.255.255.248
+no shut
+
+! CONFIGURAR VLANs
+vlan 70
+name VLAN70
+exit
+
+vlan 80
+name VLAN80
+exit
+
+vlan 90
+name VLAN90
+exit
+
+! INTEFAZ TRONCAL PARA SWITCH MULTICAPA (MLS)
+int g0/1
+switchport trunk encapsulation dot1q
+switchport mode trunk
+no shut
+
+int g0/2
+switchport trunk encapsulation dot1q
+switchport mode trunk
+no shut
+
+int vlan 70
+ip address 10.21.48.1 255.255.252.0
+
+int vlan 80
+ip address 10.21.44.1 255.255.252.0
+
+int vlan 90
+ip address 10.21.40.1 255.255.252.0
+
+! ===========================
+! ======== IOTA ========
+! ===========================
+
+!--- Configuración de VLANs ---
+vlan 70
+name VLAN70
+exit
+
+vlan 80
+name VLAN80
+exit
+
+vlan 90
+name VLAN90
+exit
+
+ip default-gateway 10.21.52.179
+
+! Puertos de accesso
+interface f0/3
+switchport mode access
+switchport access vlan 70
+
+interface f0/4
+switchport mode access
+switchport access vlan 80
+
+interface f0/5
+switchport mode access
+switchport access vlan 90
+
+! Puertos de TRUNK
+interface range f0/1-2
+switchport mode trunk
+no shut
+
+! ===========================
+! ======== PSI ========
+! ===========================
+
+!--- Configuración de VLANs ---
+vlan 70
+name VLAN70
+exit
+
+vlan 80
+name VLAN80
+exit
+
+vlan 90
+name VLAN90
+exit
+
+ip default-gateway 10.21.52.179
+
+! Puertos de accesso
+interface f0/5
+switchport mode access
+switchport access vlan 70
+
+interface f0/2
+switchport mode access
+switchport access vlan 80
+
+interface f0/4
+switchport mode access
+switchport access vlan 90
+
+! Puertos de TRUNK
+interface range f0/1
+switchport mode trunk
+no shut
+
+interface range f0/3
+switchport mode trunk
+no shut

@@ -1,0 +1,36 @@
+! ===========================
+! ==== Router Activo ========
+! ===========================
+
+! Se debe activar la interfaz que funciona como gateway
+int g0/1
+! seleccionar el protocolo HSRP version 2
+standby ver 2
+! selecciona el grupo de HSRP a una red
+! standby (GRUPO) (IP_VIRTUAL_GATEWAY)
+standby 1 ip 192.168.1.254
+! selecciona la prioridad del Router
+! el router con el highest priority = router activo
+! higher priority = first in line of usage
+standby 1 priority 150
+! Rectivar la prioridad del router en restablecimiento del estado saludable
+standby 1 preempt
+
+! ===========================
+!  Router Secundario ========
+! ===========================
+int g0/0
+standby ver 2
+standby 1 ip 192.168.1.254
+! La prioridad 100 es la prioridad default
+standby 1 priority 100
+! La resusitacion solo es necesaria en el router activo
+! standby 1 preempt
+
+! ===========================
+! == SWITCHES ===============
+! ===========================
+
+en
+config t
+ip default-gateway 192.168.1.254

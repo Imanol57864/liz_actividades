@@ -63,43 +63,12 @@ login
 logging synchronous
 exit
 
-! INTERFACES
-int G0/1
-desc conexion switch IOTA
-ip add  10.21.52.178  255.255.255.248
-no shut
-
-int G0/2
-desc conexion switch PSI
-ip add  10.21.52.178  255.255.255.248
-no shut
-
-int F0/3
-desc conexion switch MU
-ip add 10.21.52.179 255.255.255.252
-no shut
-
-
-! VLANS
-int g0/0/1.100
-desc vlan 100 2000 hosts
-encapsulation  dot1q  100
-ip add  10.21.32.1  255.255.248.0
-
-int g0/0/1.200 
-desc vlan 3050 hosts
-encapsulation  dot1q  200
-ip add  10.21.16.1  255.255.240.0
-
-int g0/0/1
-no shut
-
-
-
-
-
-
-
-! ===========================
-! ======== IOTA || PSI ========
-! ===========================
+! OSPF (Para todas las redes conectadas)
+router ospf 8
+! ip de subred || mascara comodin || area 0
+network 10.21.52.176 0.0.0.7 area 0
+network 10.21.48.0 0.0.3.255 area 0
+network 10.21.44.0 0.0.3.255 area 0
+network 10.21.40.0 0.0.3.255 area 0
+passive-interface g0/1
+passive-interface g0/2

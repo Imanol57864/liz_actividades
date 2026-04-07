@@ -1,0 +1,21 @@
+ip dhcp excluded-address
+
+ip dhcp pool
+network 
+default-router 
+dns-server 
+
+! -------------------------------
+! Denegar rango de IPs
+! ip dhcp excluded-address FIRST_IP LAST_IP
+! ip dhcp excluded-address 192.168.2.1 192.168.2.2
+! -------------------------------
+
+ip dhcp excluded-address 192.168.1.1
+
+ip dhcp pool NOMBRE
+! network IP_SUBNET MASK_SUBNET
+network 192.168.1.0 255.255.255.0
+! default-router IP_DEF_GATEWAY
+default-router 192.168.1.1
+dns-server 142.251.32.46
