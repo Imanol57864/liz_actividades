@@ -1,0 +1,134 @@
+!---------------------------
+!Configuración R1 || RF
+!---------------------------
+en
+config t
+
+hostname R1
+
+enable password class
+
+no ip domain-lookup
+
+banner motd # Prohibido entrar a este router sin autorizacion !!! #
+
+line con 0
+password cisco
+login
+logging synchronous
+
+line vty 0 4
+password cisco
+login
+logging synchronous
+
+! Servicio de DHCP
+ip dhcp excluded-address 200.10.5.1
+ip dhcp excluded-address 200.10.5.65
+ip dhcp excluded-address 200.10.5.70
+ip dhcp excluded-address 200.10.5.69
+ip dhcp excluded-address 200.10.5.61
+ip dhcp excluded-address 200.10.5.62
+
+ip dhcp pool EMPLEADOS
+network 200.10.5.0 255.255.255.192
+default-router 200.10.5.62
+dns-server 64.1.2.3
+
+ip dhcp pool DIRECTIVOS
+network 200.10.5.64 255.255.255.248
+default-router 200.10.5.70
+dns-server 64.1.2.3
+
+interface Loopback0
+ip address 2.2.2.2 255.255.255.248
+
+interface S0/0/1
+ip address 50.87.6.34 255.255.255.252
+desc Enlace con ISP
+no shut
+
+int g0/0
+ip address 200.10.5.62 255.255.255.192
+desc Enlace con NARANJA
+no shut
+
+int g0/1
+ip address 200.10.5.70 255.255.255.248
+desc Enlace con AZUL
+no shut
+
+! Ruta por default hacia el ISP
+ip route 0.0.0.0 0.0.0.0 s0/0/1
+
+!---------------------------
+!Configuración S1
+!---------------------------
+en
+config t
+
+hostname S1
+
+enable password class
+
+no ip domain-lookup
+
+banner motd # Prohibido entrar a este switch sin autorizacion #
+
+line con 0
+password cisco
+login
+logging synchronous
+
+line vty 0 15
+password cisco
+login
+logging synchronous
+
+! Configurar la IP del switch
+int vlan 1
+ip address 200.10.5.61 255.255.255.192
+no shut
+ip default-gateway 200.10.5.62
+
+end
+
+!---------------------------
+!Configuración S2
+!---------------------------
+en
+config t
+
+hostname S2
+
+enable password class
+
+no ip domain-lookup
+
+banner motd # Prohibido entrar a este switch sin autorizacion #
+
+line con 0
+password cisco
+login
+logging synchronous
+
+line vty 0 15
+password cisco
+login
+logging synchronous
+
+! Configurar la IP del switch
+int vlan 1
+ip address 200.10.5.69 255.255.255.248
+no shut
+ip default-gateway 200.10.5.70
+
+end
+
+!---------------------------
+!Configuración ISP
+!---------------------------
+
+! Rutas estáticas hacia las redes de la empresa
+ip route 200.10.5.0 255.255.255.192 50.87.6.34
+ip route 200.10.5.64 255.255.255.248 50.87.6.34

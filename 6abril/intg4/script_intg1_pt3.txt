@@ -1,0 +1,71 @@
+! ===========================
+! ======== GAMMA DONE ========
+! ===========================
+
+! Servicio de DHCP
+ip dhcp excluded-address 10.21.0.1 10.21.0.5
+
+ip dhcp pool INTEGRA
+network 10.21.0.0 255.255.240.0
+default-router 10.21.0.1
+dns-server 10.21.52.174
+
+int G0/0/1
+ip address 10.21.0.1 255.255.240.0
+desc Enlace VLAN AMARILLA
+no shut
+
+! ===========================
+! ======== DELTA DONE ========
+! ===========================
+interface GigabitEthernet0/0/0
+description conexion router DELTA
+ip address 10.21.52.186 255.255.255.252
+no shut
+
+X Red azul - Red rosa
+Y Red azul - Red verde
+X Red azul - Red amarilla
+X Red azul - 10.21.52.126
+
+
+! ===========================
+! ======== IOTA ========
+! ===========================
+
+! Configura el nombre de cada switch.
+ena
+config t
+hostname NU
+
+no ip domain-lookup
+service password-encryption 
+
+enable secret class
+
+banner motd # Unauthorized access is strictly prohibited.# 
+
+line con 0
+password cisco 
+login
+logging synchronous 
+
+line vty 0 15 
+password cisco 
+login
+logging synchronous
+exit
+
+! Configura las vlans con los nombres VLAN100 y VLAN200.
+vlan 70
+name VLAN70
+exit
+
+vlan 80
+name VLAN80
+exit
+
+vlan 90
+name VLAN90
+exit
+

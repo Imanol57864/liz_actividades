@@ -34,3 +34,9 @@ interface  Nombre_Interfaz
 switchport mode trunk
 no shut
 
+! Configuracion IP DEL SWITCH
+int vlan 1
+ip address 192.168.1.153 255.255.255.248
+no shut
+ip default-gateway 192.168.1.158
+
