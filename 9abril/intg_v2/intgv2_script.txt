@@ -1,0 +1,144 @@
+!---------------------------------------------
+! Router ISP 
+!---------------------------------------------
+
+en
+config t
+
+hostname ISP
+
+no ip domain-lookup
+
+service password-encryption
+
+enable secret class
+
+banner motd #Unauthorized access is strictly prohibited#
+
+line con 0
+password cisco
+login
+logging synchronous
+
+line vty 0 4
+password cisco
+login
+logging synchronous
+
+int S0/1/0
+ip address 20.20.1.2 255.255.255.252
+no shut
+
+int S0/1/1
+ip address 20.20.2.2 255.255.255.252
+clock rate 128000
+no shut
+
+
+!---------------------------------------------
+! Router Volkswagen 
+!---------------------------------------------
+
+en
+config t
+
+hostname Volkswagen 
+
+no ip domain-lookup
+
+service password-encryption
+
+enable secret class
+
+banner motd #Unauthorized access is strictly prohibited#
+
+line con 0
+password cisco
+login
+logging synchronous
+
+line vty 0 4
+password cisco
+login
+logging synchronous
+
+interface G0/0/1
+ip address 10.10.1.1 255.255.255.0
+no shut
+
+int S0/1/0
+ip address 20.20.1.1 255.255.255.252
+clock rate 128000
+no shut
+
+! default
+ip route 0.0.0.0 0.0.0.0 20.20.1.2
+
+! tunnel
+interface tunnel 0
+tunnel source s0/1/0
+tunnel destination 20.20.2.1
+ip address 10.50.50.1 255.255.255.252
+
+! ospf (reinicia el router, aveces se bugea)
+router ospf 2
+network 10.10.1.0 0.0.0.255 area 0
+! OSPF REQUIERE DE LA RUTA DEL TUNNEL
+network 10.50.50.0 0.0.0.3 area 0
+passive-interface s0/1/0
+passive-interface g0/0/1
+
+
+
+
+!---------------------------------------------
+! Router Michelin
+!---------------------------------------------
+
+en
+config t
+
+hostname Michelin
+
+no ip domain-lookup
+
+service password-encryption
+
+enable secret class
+
+banner motd #Unauthorized access is strictly prohibited#
+
+line con 0
+password cisco
+login
+logging synchronous
+
+line vty 0 4
+password cisco
+login
+logging synchronous
+
+interface G0/0/1
+ip address 10.10.2.1 255.255.255.0
+no shut
+
+int S0/1/1
+ip address 20.20.2.1 255.255.255.252
+no shut
+
+! default
+ip route 0.0.0.0 0.0.0.0 20.20.2.2
+
+! tunnel
+interface tunnel 0
+tunnel source s0/1/1
+tunnel destination 20.20.1.1
+ip address 10.50.50.2 255.255.255.252
+
+! ospf (reinicia el router, aveces se bugea)
+router ospf 2
+network 10.10.2.0 0.0.0.255 area 0
+! OSPF REQUIERE DE LA RUTA DEL TUNNEL
+network 10.50.50.0 0.0.0.3 area 0
+passive-interface s0/1/1
+passive-interface g0/0/1

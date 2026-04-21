@@ -1,0 +1,25 @@
+!--------------------------------------
+! ACME1
+!--------------------------------------
+en
+config t
+
+! Configurar ISP1 como vecino en eBGP
+! router bgp GBP_AREA_NUM_SELF
+router bgp 65001
+network 192.168.0.0 mask 255.255.255.0
+! neighbour IP_INTERFAZ_LLEGADA GBP_AREA_NUM
+neighbor 1.1.1.1 remote-as 65003
+
+!--------------------------------------
+! OTHERCO1
+!--------------------------------------
+en
+config t
+
+! Configurar ISP2 como vecino en eBGP
+! router bgp GBP_AREA_NUM_SELF
+router bgp 65002
+network 172.16.10.0 mask 255.255.255.0
+! neighbour IP_INTERFAZ_LLEGADA GBP_AREA_NUM
+neighbor 1.1.1.9 remote-as 65003

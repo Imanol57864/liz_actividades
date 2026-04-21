@@ -1,0 +1,26 @@
+
+
+! 1 DENY @WEB: Directores y Servidores -> Servidor Facebook.com
+
+access-list 107 deny tcp 132.254.89.192 0.0.0.31 65.0.1.10 0.0.0.0 eq 80
+access-list 107 deny tcp 132.254.89.128 0.0.0.63 65.0.1.10 0.0.0.0 eq 80
+access-list 107 permit ip any any
+
+! 1 DENY @WEB: RA
+
+int s0/0/0
+ip access-group 107 out
+
+
+! 2 PERMIT: Profesores y Servidores -> Servidor Directivos 132.254.89.221
+! 2 DENY: any any
+
+access-list 108 permit ip 132.254.89.232 0.0.0.7 132.254.89.221 0.0.0.0
+access-list 108 permit ip 132.254.89.128 0.0.0.63 132.254.89.221 0.0.0.0 
+access-list 108 deny ip any 132.254.89.221 0.0.0.0 
+access-list 108 permit ip any any
+
+! 2 DENY: any any: RA vlan 10
+
+int g0/0.10
+ip access-group 108 out

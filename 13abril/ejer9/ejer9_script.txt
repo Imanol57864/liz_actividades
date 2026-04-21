@@ -1,0 +1,52 @@
+!--------------------------------------
+! R1
+!--------------------------------------
+en
+config t
+
+router ospf 1
+network 10.0.12.0 0.0.0.3 area 0
+network 10.0.13.0 0.0.0.3 area 0
+network 1.1.1.0 0.0.0.255 area 0
+passive-interface g0/0
+
+! Redistribuir ruta de salida
+default-information originate
+ip route 0.0.0.0 0.0.0.0 100.0.0.1
+
+! Configurar ISP como vecino en eBGP
+! router bgp GBP_AREA_NUM_SELF
+router bgp 65000
+network 10.0.12.0 mask 255.255.255.252
+network 10.0.13.0 mask 255.255.255.252
+network 10.0.23.0 mask 255.255.255.252
+! Como son interfaces loopback, se usa una sola IP
+! por lo tanto: network IP_SELECTED mask '255.255.255.255'
+network 1.1.1.1 mask 255.255.255.255
+network 2.2.2.2 mask 255.255.255.255
+network 3.3.3.3 mask 255.255.255.255
+! neighbour IP_INTERFAZ_LLEGADA GBP_AREA_NUM
+neighbor 100.0.0.1 remote-as 65001
+
+
+!--------------------------------------
+! R2
+!--------------------------------------
+en
+config t
+
+router ospf 1
+network 10.0.12.0 0.0.0.3 area 0
+network 10.0.23.0 0.0.0.3 area 0
+network 2.2.2.0 0.0.0.255 area 0
+
+!--------------------------------------
+! R3
+!--------------------------------------
+en
+config t
+
+router ospf 1
+network 10.0.23.0 0.0.0.3 area 0
+network 10.0.13.0 0.0.0.3 area 0
+network 3.3.3.0 0.0.0.255 area 0

@@ -1,0 +1,273 @@
+! ISP DONE
+! CONFIGURAR RUTAS ESTÁTICAS HACIA LAS REDES DE LA EMPRESA
+ip route 160.8.1.0 255.255.255.128 s0/0/1
+ip route 170.15.3.176 255.255.255.248 s0/0/1
+ip route 170.15.3.160 255.255.255.240 s0/0/1
+ip route 170.15.3.128 255.255.255.224 s0/0/1
+
+!*** Router RHospital DONE ***
+!--------------------------------------------------------------
+
+! --- Paso 1
+ena
+config t
+hostname RHospital
+no ip domain-lookup
+enable secret class
+banner motd # Unauthorized access is strictly prohibited.# 
+
+! Configuración de DHCP ROSA
+!-------------------------------------
+ip dhcp excluded-address 160.8.1.1
+ip dhcp pool ROSA
+network 160.8.1.0 255.255.255.128
+dns-server 9.9.9.9
+default-router 160.8.1.1
+
+! Configuración de DHCP VLAN70
+!-------------------------------------
+ip dhcp excluded-address 170.15.3.174
+ip dhcp excluded-address 170.15.3.162
+ip dhcp pool VLAN70
+network 170.15.3.160 255.255.255.240
+dns-server 9.9.9.9
+default-router 170.15.3.174
+
+! Configuración de DHCP VLAN90
+!-------------------------------------
+ip dhcp excluded-address 170.15.3.158
+ip dhcp pool VLAN90
+network 170.15.3.128 255.255.255.224
+dns-server 9.9.9.9
+default-router 170.15.3.158
+
+line con 0
+password cisco
+login
+logging synchronous
+line vty 0 4
+password cisco
+login
+logging synchronous
+exit
+! -----------------------------------
+int s0/0/0
+ip address 205.0.1.241 255.255.255.252
+clock rate 128000
+no shut
+int g0/1
+ip address 160.8.1.1 255.255.255.128
+no shut
+int s0/0/1
+ip address 180.8.2.186 255.255.255.252
+no shut
+
+! Ruta por default hacia el ISP
+ip route 0.0.0.0 0.0.0.0 s0/0/0
+
+router ospf 8
+network 180.8.2.184 0.0.0.3 area 0
+network 160.8.1.0 0.0.0.127 area 0
+passive-interface s0/0/0
+passive-interface g0/1
+default-information originate
+
+
+!*** Router RPersonal ***
+!--------------------------------------------------------------
+
+! --- Paso 1
+ena
+config t
+hostname RPersonal
+no ip domain-lookup
+enable secret class
+banner motd # Unauthorized access is strictly prohibited.# 
+line con 0
+password cisco
+login
+logging synchronous
+line vty 0 4
+password cisco
+login
+logging synchronous
+exit
+! -----------------------------------
+int s0/0/0
+ip address 180.8.2.185 255.255.255.252
+clock rate 128000
+no shut
+int g0/0
+no shut
+
+! IP de las subinterfaces = última válida de la subnet
+
+! VLAN 70 170.15.3.161 - 170.15.3.174 || 255.255.255.240
+int g0/0.70
+desc vlan 70 Administrativos
+encapsulation  dot1q  70
+ip address 170.15.3.174 255.255.255.240
+ip helper-address 180.8.2.186
+
+! VLAN 90 170.15.3.129 - 170.15.3.158 || 255.255.255.224
+int g0/0.90
+desc vlan 90 Medicos
+encapsulation  dot1q  90
+ip address 170.15.3.158 255.255.255.224
+ip helper-address 180.8.2.186
+
+! VLAN 1 170.15.3.177 - 170.15.3.182 || 255.255.255.248
+int g0/0.1
+desc vlan 1 nativa
+encapsulation  dot1q  1
+ip address 170.15.3.182 255.255.255.248
+ip helper-address 180.8.2.186
+
+router ospf 8
+network 180.8.2.184 0.0.0.3 area 0
+network 170.15.3.176 0.0.0.7 area 0
+network 170.15.3.160 0.0.0.15 area 0
+network 170.15.3.128 0.0.0.31 area 0
+passive-interface g0/0
+
+
+!*** Switch SPersonal ***
+!--------------------------------------------------------------
+
+! --- Paso 1
+ena
+config t
+hostname SPersonal
+no ip domain-lookup
+enable secret class
+banner motd # Unauthorized access is strictly prohibited.# 
+line con 0
+password cisco 
+login
+logging synchronous 
+line vty 0 15 
+password cisco 
+login
+logging synchronous
+exit
+
+!--- Configuración de VLANs ---
+vlan 70
+name Administrativos
+exit
+vlan 90
+name Medicos
+exit
+int vlan 1
+ip address 170.15.3.179 255.255.255.248
+no shut
+ip default-gateway 170.15.3.182
+
+! Definicin del o los puertos TRUNK
+int f0/2
+switchport mode trunk
+no shut
+
+int g0/2
+switchport mode trunk
+no shut
+
+int f0/1
+switchport mode trunk
+no shut
+
+end
+
+!*** Switch S1 ***
+!--------------------------------------------------------------
+
+! --- Paso 1
+ena
+config t
+hostname S1
+no ip domain-lookup
+enable secret class
+banner motd # Unauthorized access is strictly prohibited.#  
+line con 0
+password cisco 
+login
+logging synchronous 
+line vty 0 15 
+password cisco 
+login
+logging synchronous
+exit
+!--- Configuración de VLANs ---
+vlan 70
+name Administrativos
+exit
+vlan 90
+name Medicos
+exit
+int vlan 1
+ip address 170.15.3.180 255.255.255.248
+no shut
+ip default-gateway 170.15.3.182
+
+! Asignacin de puertos a la VLAN
+interface range f0/2-10
+switchport mode access
+switchport access vlan 70
+
+interface range f0/11-24
+switchport mode access
+switchport access vlan 90
+
+interface f0/1
+switchport mode trunk
+no shut
+
+end
+
+
+!*** Switch S2 ***
+!--------------------------------------------------------------
+
+! --- Paso 1
+ena
+config t
+hostname S2
+no ip domain-lookup
+enable secret class
+banner motd # Unauthorized access is strictly prohibited.# 
+line con 0
+password cisco 
+login
+logging synchronous 
+line vty 0 15 
+password cisco 
+login
+logging synchronous
+exit
+!--- Configuración de VLANs ---
+vlan 70
+name Administrativos
+exit
+vlan 90
+name Medicos
+exit
+int vlan 1
+ip address 170.15.3.181 255.255.255.248
+no shut
+ip default-gateway 170.15.3.182
+
+! Asignacin de puertos a la VLAN
+interface range f0/2-10
+switchport mode access
+switchport access vlan 70
+
+interface range f0/11-24
+switchport mode access
+switchport access vlan 90
+
+interface f0/1
+switchport mode trunk
+no shut
+
+end
+

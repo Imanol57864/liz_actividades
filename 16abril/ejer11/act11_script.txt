@@ -1,0 +1,123 @@
+! AÑADIR MAPA CRIPTOGRAFICO EN INTERFAZ DE SALIDA
+! DECIR EN EL MAPA CRIPTOGRAFICO LA IP DE LA INTERFAZ DE LLEGADA
+! set peer IP_INTERFAZ_LLEGADA
+
+! LA CLAVE DE CIFRADO DEBE SER LA MISMA
+
+! Y ESTO SE CONFIGURA DE IDA Y DE REGRESO
+
+! CONSULTA ABSOLUTAMENTE TODOS LOS REGISTROS DEL TRAFICO DEL TUNNEL
+! show crypto ipsec sa
+
+! ---------------------------------
+! -------- R1 ---------------------
+! ---------------------------------
+
+! en
+! config t
+
+! ---------------------------------
+! -------- INPUT MANUAL -----------
+! ---------------------------------
+! Activa el paquete de seguridad del 
+license boot module c1900 technology-package securityk9
+! 
+yes
+!
+reload
+! ---------------------------------
+! -------- INPUT MANUAL -----------
+! ---------------------------------
+
+! Activa la ACL (Access Control List) del R1
+! Debido a la denegación implícita deny all, no es necesario configurar una declaración deny ip any any.
+! access-list ID_ACL permit ip IP_SUBNET_ORIGIN WILDCARD_SUBNET_ORIGIN IP_SUBNET_DESTINY WILDCARD_SUBNET_DESTINY
+access-list 110 permit ip 192.168.1.0 0.0.0.255 192.168.3.0 0.0.0.255
+
+! Politica de criptografia
+! crypto isakmp policy PRIORIDAD
+crypto isakmp policy 10 
+! encryption aes
+! hash sha256
+encryption aes 256
+authentication pre-share
+group 5
+
+! Configurar la llave de acceso de la criptografia
+crypto isakmp key vpnpa55 address 10.2.2.2
+
+! Crear el concepto de transformacion VPN-SET que utilice esp-aes y esp-sha-hmac.
+! crypto ipsec transform-set NOMBRE_TRANSFORMACION
+crypto ipsec transform-set VPN-SET esp-aes esp-sha-hmac
+
+! Configurar mapa criptografico
+crypto map VPN-MAP 10 ipsec-isakmp 
+description VPN connection to R3
+! set peer IP_INTERFAZ_LLEGADA
+set peer 10.2.2.2
+set transform-set VPN-SET 
+! match address ID_ACL
+match address 110
+
+! Añadir el mapa criptografico a la interfaz del router
+int s0/0/0
+crypto map VPN-MAP 
+no shut
+
+
+
+! ---------------------------------
+! -------- R3 ---------------------
+! ---------------------------------
+
+! en
+! config t
+
+! ---------------------------------
+! -------- INPUT MANUAL -----------
+! ---------------------------------
+! Activa el paquete de seguridad del 
+license boot module c1900 technology-package securityk9
+! 
+yes
+!
+reload
+! ---------------------------------
+! -------- INPUT MANUAL -----------
+! ---------------------------------
+
+! Activa la ACL (Access Control List) del R3
+! Debido a la denegación implícita deny all, no es necesario configurar una declaración deny ip any any.
+! access-list ID_ACL permit ip IP_SUBNET_ORIGIN WILDCARD_SUBNET_ORIGIN IP_SUBNET_DESTINY WILDCARD_SUBNET_DESTINY
+access-list 110 permit ip 192.168.3.0 0.0.0.255 192.168.1.0 0.0.0.255
+
+! Politica de criptografia
+! crypto isakmp policy PRIORIDAD
+crypto isakmp policy 10 
+! encryption aes
+! hash sha256
+encryption aes 256
+authentication pre-share
+group 5
+
+! Configurar la llave de acceso de la criptografia
+crypto isakmp key CLAVE_DE_CIFRADO address IP_INTERFAZ_LLEGADA
+crypto isakmp key vpnpa55 address 10.1.1.2
+
+! Crear el concepto de transformacion VPN-SET que utilice esp-aes y esp-sha-hmac.
+! crypto ipsec transform-set NOMBRE_TRANSFORMACION
+crypto ipsec transform-set VPN-SET esp-aes esp-sha-hmac
+
+! Configurar mapa criptografico
+crypto map VPN-MAP 10 ipsec-isakmp 
+description VPN connection to R3
+! set peer IP_INTERFAZ_LLEGADA
+set peer 10.1.1.2
+set transform-set VPN-SET 
+! match address ID_ACL
+match address 110
+
+! Añadir el mapa criptografico a la interfaz del router
+int s0/0/1
+crypto map VPN-MAP 
+no shut

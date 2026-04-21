@@ -1,0 +1,26 @@
+! --------------------------
+! ---- GRE (R1) ------------------
+! --------------------------
+
+en
+config t
+
+! TUNNEL != INTERFAZ != SUBNET
+! TUNNEL = LA IP DE LA CONEXION LOGICA
+! INTERFAZ = LA INTERFAZ DE SALIDA DEL ROUTER AL ISP/INTERNET
+! SUBNET = LA SUBRED AL QUE EL ROUTER OTORGA INTERNET
+
+! interfaz para el tunnel
+interface tunnel 0
+! ip address IP_TUNEL_SALIDA MASK_TUNEL_SALIDA
+ip address 10.10.10.1 255.255.255.252
+! tunnel source INTERFAZ_TUNNEL_SALIDA
+tunnel source S0/0/0
+! tunne destination IP_INTERFAZ_LLEGADA
+tunnel destination 209.165.122.2
+tunnel mode gre ip
+no shut
+
+! RUTA DE TRAFICO PRIVADO
+! ip route IP_SUBNET_LLEGADA MASK_SUBNET_LLEGADA IP_TUNNEL_LLEGADA
+ip route 192.168.2.0 255.255.255.0 10.10.10.2
