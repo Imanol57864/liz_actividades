@@ -1,0 +1,31 @@
+!========== RFrontera ===========
+en
+config t
+
+int g0/0/0
+desc conexion ISPprimario
+! ultima valida
+ip address 192.168.40.254 255.255.255.252
+no shut
+
+int g0/0/1
+desc conexion SWITCH0
+ip address 172.20.128.254 255.255.255.0
+no shut
+
+int s0/1/0
+desc conexion ISPsecundario
+ip address 172.16.255.242 255.255.255.252
+no shut
+
+ip dhcp excluded-address 172.20.128.254
+ip dhcp pool POOL-myPool
+network 172.20.128.0 255.255.255.0
+default-router 172.20.128.254
+dns-server 8.8.8.8
+! colocal ruta default alternativa
+! (new) ip route 0.0.0.0 0.0.0.0 INTERFAZ_SALIDA COSTO
+ip route 0.0.0.0 0.0.0.0 s0/1/0 12
+ip route 0.0.0.0 0.0.0.0 g0/0/0
+
+!========== RFrontera ===========

@@ -1,0 +1,129 @@
+!---------------------------------------------------------------
+!Router A
+!---------------------------------------------------------------
+en
+config t
+
+hostname RA
+
+interface G0/1
+ip address 10.0.1.254 255.255.254.0
+ip helper-address 10.0.3.129
+no shut
+
+interface Serial0/1/0
+ip address 10.0.3.130 255.255.255.252
+clock rate 128000
+no shut
+
+router ospf 1
+passive-interface GigabitEthernet0/1
+network 10.0.0.0 0.0.1.255 area 0
+network 10.0.3.128 0.0.0.3 area 0
+
+
+
+!---------------------------------------------------------------
+!Router B
+!---------------------------------------------------------------
+en
+config t
+
+hostname RB
+
+! DHCP
+ip dhcp excluded-address 10.0.7.254
+ip dhcp pool RB_POOL
+network 10.0.4.0 255.255.252.0
+default-router 10.0.7.254
+dns-server 5.5.5.5
+! DHCP
+ip dhcp excluded-address 10.0.1.253
+ip dhcp excluded-address 10.0.1.254
+ip dhcp pool RA_POOL
+network 10.0.0.0 255.255.254.0
+default-router 10.0.1.254
+dns-server 5.5.5.5
+
+interface G0/1
+ip address 10.0.7.254 255.255.252.0
+! ip helper-address 10.0.7.254
+no shut
+
+interface Serial0/1/0
+ip address 65.10.8.66 255.255.255.252
+no shut
+
+interface Serial0/1/1
+ip address 10.0.3.129 255.255.255.252
+no shut
+
+! Ruta por default
+ip route 0.0.0.0 0.0.0.0 s0/1/0
+
+router ospf 1
+passive-interface GigabitEthernet0/1
+passive-interface Serial0/1/0
+network 10.0.3.128 0.0.0.3 area 0
+network 10.0.4.0 0.0.3.255 area 0
+default-information originate
+
+! permit any realmente no tiene ninguna uitlidad por su cuenta, pero es necesario que exista como interfaz para NAT
+! Pool IPs públicas: 170.15.9.32 /27
+
+! #en #sh ip nat trans
+
+! Para pingear un servidor INTERNO desde un dispositivo EXTERNO se debe usar la IP PUBLIC según NAT
+! etc
+
+! NAT ESTÁTICO
+! ip nat inside source static SINGLE_IP NEW_SINGLE_IP
+ip nat inside source static 10.0.1.253 170.15.9.32
+
+! NAT AUTOMATICO
+! Traducción dinámica de uno a uno, por cada dirección IP privada se asignará una dirección IP pública.
+! Lista de acceso estandar, access-list ACL_ID (permit || deny) (any || SINGLE_IP 0.0.0.0 || IP_SUBNET WILDCARD_SUBNET)
+access-list 20 permit any
+! access-list 20 permit 10.0.0.0 0.0.1.255
+! access-list 20 permit 10.0.4.0 0.0.3.255
+! ip nat pool POOL_NAME FIRST_IP_TO_USE LAST_IP_TO_USE netmask SUBNET_MASK
+ip nat pool MyPool 170.15.9.33 170.15.9.63 netmask 255.255.255.224
+! ip nat inside source list ACL_ID pool POOL_NAME_TO_USE
+ip nat inside source list 20 pool MyPool
+
+! Agrega la Traducción NAT a las interfaces del router
+int s0/1/1
+! facing inside the Company's network = ip nat inside
+ip nat inside
+exit
+
+int g0/1
+! facing inside the Company's network = ip nat inside
+ip nat inside
+exit
+
+int s0/1/0
+! facing outside the Company's network (Mostly ISPs) = ip nat outside
+ip nat outside
+exit
+
+! PAT -> Single change
+! Activa puertos arriba del 1024-65000, esto permite efectivamente 65000 IPs publicas 
+en
+clear ip nat trans * 
+clear ip nat trans * 
+clear ip nat trans * 
+clear ip nat trans * 
+clear ip nat trans * 
+clear ip nat trans * 
+config t
+ip nat inside source list 20 pool MyPool overload
+
+
+
+!---------------------------------------------------------------
+!ISP
+!---------------------------------------------------------------
+
+! Ruta estática con el direccionamiento público asignado
+ip route 170.15.9.32 255.255.255.224 s0/0/0
